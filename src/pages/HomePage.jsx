@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { usePersonalization } from '../context/PersonalizationContext';
 import { rankArticles, topInterests } from '../utils/recommend';
 import { useSports } from '../hooks/useSports';
@@ -11,6 +11,9 @@ import { ColCard } from '../components/cards/ColCard';
 import { ListCard } from '../components/cards/ListCard';
 import { FeedCard } from '../components/cards/FeedCard';
 import { EditorialCard } from '../components/cards/EditorialCard';
+
+const SHOWN_KEY = 'dispatch_shown_feed';
+const SHOWN_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
 function shuffle(arr) {
     const a = [...arr];
@@ -28,12 +31,42 @@ export function HomePage({ articles, onOpen }) {
     // Sports scores ≤1 day old for the home page sidebar band
     const { recent: sportsEvents } = useSports({ maxAgeDays: 1 });
 
+    // Read which article URLs were already featured on a previous visit (stable, read once)
+    const [shownSet] = useState(() => {
+        try {
+            const cutoff = Date.now() - SHOWN_TTL;
+            const raw = JSON.parse(localStorage.getItem(SHOWN_KEY) ?? '[]');
+            return new Set(raw.filter(e => e.ts > cutoff).map(e => e.url));
+        } catch { return new Set(); }
+    });
+
     const ranked = useMemo(() => {
         if (!isPersonalized) return articles;
         const top = rankArticles(articles, history);
+        // Demote articles already shown in a recent visit so fresh ones surface
+        const fresh = top.filter(a => !shownSet.has(a.url));
+        const stale = top.filter(a => shownSet.has(a.url));
+        const merged = [...fresh, ...stale];
         // Keep top-ranked locked for hero slots, shuffle the long tail for variety
-        return [...top.slice(0, 16), ...shuffle(top.slice(16))];
-    }, [articles, history, isPersonalized]);
+        return [...merged.slice(0, 16), ...shuffle(merged.slice(16))];
+    }, [articles, history, isPersonalized, shownSet]);
+
+    // After rendering, persist the currently featured URLs so next visit shows new ones
+    useEffect(() => {
+        if (!ranked.length) return;
+        try {
+            const cutoff = Date.now() - SHOWN_TTL;
+            const prev = JSON.parse(localStorage.getItem(SHOWN_KEY) ?? '[]')
+                .filter(e => e.ts > cutoff);
+            const newUrls = ranked.slice(0, 24).map(a => a.url);
+            const merged = [
+                ...prev.filter(e => !newUrls.includes(e.url)),
+                ...newUrls.map(url => ({ url, ts: Date.now() })),
+            ];
+            localStorage.setItem(SHOWN_KEY, JSON.stringify(merged));
+        } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // intentionally run once on mount
 
     const withImg = ranked.filter((a) => a.urlToImage);
     const withoutImg = ranked.filter((a) => !a.urlToImage);

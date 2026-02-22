@@ -51,7 +51,7 @@ export function AccountPage({ onClearKey }) {
                     </div>
 
                     <section className="account-section">
-                        <h2 className="account-section-title">NewsAPI Key</h2>
+                        <h2 className="account-section-title">NewsAPI key</h2>
 
                         <div className="account-key-row">
                             <code className="account-key-value">

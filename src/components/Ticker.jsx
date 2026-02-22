@@ -7,8 +7,8 @@ export function Ticker({ articles }) {
     const renderItems = (keySuffix) =>
         items.map((a, i) => (
             <span key={`${keySuffix}-${i}`} className="ticker-item">
-                {a.title}
                 <span className="ticker-sep" aria-hidden="true">◆</span>
+                {a.title}
             </span>
         ));
 
