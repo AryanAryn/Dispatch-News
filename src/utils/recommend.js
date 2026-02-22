@@ -70,7 +70,7 @@ export function extractTerms(text) {
         ...doc.organizations().out('array'),
         ...doc.topics().out('array'),
     ].map(p => p.toLowerCase().replace(/[^a-z0-9' -]/g, '').trim())
-     .filter(p => p.length > 2);
+        .filter(p => p.length > 2);
 
     // Split phrases into individual clean tokens for stop-word filtering
     const phraseTokens = new Set(
@@ -192,7 +192,7 @@ export function topInterests(history, suppressed = new Set(), limit = 6) {
 export function cosineSimilarity(a, b) {
     let dot = 0, normA = 0, normB = 0;
     for (let i = 0; i < a.length; i++) {
-        dot   += a[i] * b[i];
+        dot += a[i] * b[i];
         normA += a[i] * a[i];
         normB += b[i] * b[i];
     }
@@ -281,92 +281,4 @@ export function rankArticlesSemantic(articles, history, vectorCache = {}, suppre
             return { ...a, _final: a._blended * Math.pow(0.78, n) };
         })
         .sort((a, b) => b._final - a._final);
-}
-
-/** Exponential decay weight — half-life of 3 days */
-function recencyWeight(ts) {
-    const ageDays = (Date.now() - ts) / 86_400_000;
-    return Math.exp(-0.231 * ageDays); // ln(2) / 3
-}
-
-/**
- * Build a term → weight map from click history.
- * Each history entry: { title, description, ts, terms? }
- */
-export function buildProfile(history, suppressed = new Set()) {
-    const profile = {};
-    for (const item of history) {
-        const w = recencyWeight(item.ts);
-        const terms = item.terms ?? extractTerms(`${item.title} ${item.description ?? ''}`);
-        for (const term of terms) {
-            if (suppressed.has(term)) continue;
-            profile[term] = (profile[term] ?? 0) + w;
-        }
-    }
-    return profile;
-}
-
-/** Compute IDF for a term across the candidate pool */
-function idf(term, articles) {
-    const df = articles.reduce((n, a) => {
-        const hay = `${a.title} ${a.description ?? ''}`.toLowerCase();
-        return hay.includes(term) ? n + 1 : n;
-    }, 0);
-    return Math.log((articles.length + 1) / (df + 1)) + 1;
-}
-
-/** Score a single article against a profile */
-function score(article, profile, articles, idfCache) {
-    const text = `${article.title} ${article.description ?? ''}`;
-    const terms = extractTerms(text);
-    let s = 0;
-    for (const term of terms) {
-        if (!profile[term]) continue;
-        if (!idfCache[term]) idfCache[term] = idf(term, articles);
-        s += profile[term] * idfCache[term];
-    }
-    return s;
-}
-
-/**
- * Rank articles by personalised relevance with source diversity.
- * Falls back to original order when history is empty.
- */
-export function rankArticles(articles, history, suppressed = new Set()) {
-    if (!history.length) return articles;
-
-    const profile = buildProfile(history, suppressed);
-    if (!Object.keys(profile).length) return articles;
-
-    const idfCache = {};
-
-    // Score every article
-    const scored = articles.map(a => ({
-        ...a,
-        _score: score(a, profile, articles, idfCache),
-    }));
-
-    // First pass sort by raw score
-    scored.sort((a, b) => b._score - a._score);
-
-    // Second pass: source-diversity re-ranking
-    // Each additional article from the same source gets a 22% penalty
-    const sourceSeen = {};
-    return scored
-        .map(a => {
-            const src = a.source?.name ?? 'unknown';
-            const n = sourceSeen[src] ?? 0;
-            sourceSeen[src] = n + 1;
-            return { ...a, _final: a._score * Math.pow(0.78, n) };
-        })
-        .sort((a, b) => b._final - a._final);
-}
-
-/** Top interest labels for display */
-export function topInterests(history, suppressed = new Set(), limit = 6) {
-    const profile = buildProfile(history, suppressed);
-    return Object.entries(profile)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, limit)
-        .map(([term]) => term);
 }

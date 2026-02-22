@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePersonalization } from '../context/PersonalizationContext';
 import { rankArticlesSemantic } from '../utils/recommend';
 import { fetchEmbeddings } from '../api/newsApi';
+import { EMBED_VEC_LS_KEY } from '../config.js';
 import { useSports } from '../hooks/useSports';
 import { SectionHead } from '../components/SectionHead';
 import { ScoresBand } from '../components/sports/ScoresBand';
@@ -34,8 +35,13 @@ export function HomePage({ articles, onOpen }) {
     // Sports scores ≤1 day old for the home page sidebar band
     const { recent: sportsEvents } = useSports({ maxAgeDays: 1 });
 
-    // ── Semantic vector cache (populated in background after articles load) ───────
-    const [vectorCache, setVectorCache] = useState({});
+    // ── Semantic vector cache ─────────────────────────────────────────────────
+    // Pre-load from localStorage so returning users get semantic ranking on
+    // the first render; background effect fills in any new/uncached articles.
+    const [vectorCache, setVectorCache] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(EMBED_VEC_LS_KEY) ?? '{}'); }
+        catch { return {}; }
+    });
 
     useEffect(() => {
         if (!articles.length || !isPersonalized) return;

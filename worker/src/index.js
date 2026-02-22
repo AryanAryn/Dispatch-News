@@ -135,10 +135,10 @@ export default {
 
 function corsHeaders(env) {
     return {
-        'Access-Control-Allow-Origin':  env.ALLOWED_ORIGIN ?? '*',
+        'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN ?? '*',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, X-Api-Key',
-        'Access-Control-Max-Age':       '86400',
+        'Access-Control-Max-Age': '86400',
     };
 }
 
