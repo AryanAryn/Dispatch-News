@@ -40,3 +40,20 @@ export const LEAGUES = [
     { id: 4391, name: 'NFL', sport: 'football' },
     { id: 4424, name: 'MLB', sport: 'baseball' },
 ];
+
+/**
+ * Navigation sections — maps URL slug → display label → NewsAPI category key.
+ * URL:  news.aryanaryn.me/#/technology
+ * slug: 'technology'  label: 'Technology'  apiKey: 'technology'
+ * 'world' maps to NewsAPI 'general'; 'culture' maps to 'entertainment'.
+ */
+export const NAV_SECTIONS = [
+    { slug: 'home', label: 'Home', apiKey: 'home' },
+    { slug: 'world', label: 'World', apiKey: 'general' },
+    { slug: 'business', label: 'Business', apiKey: 'business' },
+    { slug: 'technology', label: 'Technology', apiKey: 'technology' },
+    { slug: 'science', label: 'Science', apiKey: 'science' },
+    { slug: 'health', label: 'Health', apiKey: 'health' },
+    { slug: 'sports', label: 'Sports', apiKey: 'sports' },
+    { slug: 'culture', label: 'Culture', apiKey: 'entertainment' },
+];

@@ -1,20 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { todayLabel } from '../utils/time';
+import { NAV_SECTIONS } from '../config.js';
 
-const SECTIONS = [
-    { key: 'home', label: 'Home' },
-    { key: 'general', label: 'World' },
-    { key: 'business', label: 'Business' },
-    { key: 'technology', label: 'Technology' },
-    { key: 'science', label: 'Science' },
-    { key: 'health', label: 'Health' },
-    { key: 'sports', label: 'Sports' },
-    { key: 'entertainment', label: 'Culture' },
-];
-
-export function Masthead({ activeSection, onNavigate, onSearch }) {
+export function Masthead({ activeSlug, onNavigate, onSearch }) {
     const [query, setQuery] = useState('');
     const [menuOpen, setMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     function handleSearch(e) {
         e.preventDefault();
@@ -24,8 +16,8 @@ export function Masthead({ activeSection, onNavigate, onSearch }) {
         }
     }
 
-    function handleNavigate(key) {
-        onNavigate(key);
+    function handleNavigate(slug) {
+        onNavigate(slug);
         setMenuOpen(false);
     }
 
@@ -47,16 +39,31 @@ export function Masthead({ activeSection, onNavigate, onSearch }) {
                     <span className="edition-badge">Digital edition</span>
                 </div>
 
-                <form className="search-bar" onSubmit={handleSearch}>
-                    <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search stories…"
-                        aria-label="Search"
-                    />
-                    <button type="submit" aria-label="Submit search">⌕</button>
-                </form>
+                <div className="top-bar-right">
+                    <form className="search-bar" onSubmit={handleSearch}>
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search stories…"
+                            aria-label="Search"
+                        />
+                        <button type="submit" aria-label="Submit search">⌕</button>
+                    </form>
+
+                    {/* User / account icon */}
+                    <button
+                        className="user-icon-btn"
+                        aria-label="Account"
+                        title="Account"
+                        onClick={() => navigate('/account')}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                            <circle cx="12" cy="8" r="4" />
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div className="logo-block">
@@ -64,11 +71,11 @@ export function Masthead({ activeSection, onNavigate, onSearch }) {
             </div>
 
             <nav className={menuOpen ? 'open' : undefined}>
-                {SECTIONS.map((s) => (
+                {NAV_SECTIONS.map((s) => (
                     <button
-                        key={s.key}
-                        className={activeSection === s.key ? 'active' : undefined}
-                        onClick={() => handleNavigate(s.key)}
+                        key={s.slug}
+                        className={activeSlug === s.slug ? 'active' : undefined}
+                        onClick={() => handleNavigate(s.slug)}
                     >
                         {s.label}
                     </button>
