@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePersonalization } from '../context/PersonalizationContext';
 import { rankArticles, topInterests } from '../utils/recommend';
 import { useSports } from '../hooks/useSports';
@@ -25,7 +26,8 @@ function shuffle(arr) {
 }
 
 export function HomePage({ articles, onOpen }) {
-    const { history, interests } = usePersonalization();
+    const { history, interests, suppressedTerms } = usePersonalization();
+    const navigate = useNavigate();
     const isPersonalized = history.length > 0;
 
     // Sports scores ≤1 day old for the home page sidebar band
@@ -42,14 +44,14 @@ export function HomePage({ articles, onOpen }) {
 
     const ranked = useMemo(() => {
         if (!isPersonalized) return articles;
-        const top = rankArticles(articles, history);
+        const top = rankArticles(articles, history, suppressedTerms);
         // Demote articles already shown in a recent visit so fresh ones surface
         const fresh = top.filter(a => !shownSet.has(a.url));
         const stale = top.filter(a => shownSet.has(a.url));
         const merged = [...fresh, ...stale];
         // Keep top-ranked locked for hero slots, shuffle the long tail for variety
         return [...merged.slice(0, 16), ...shuffle(merged.slice(16))];
-    }, [articles, history, isPersonalized, shownSet]);
+    }, [articles, history, suppressedTerms, isPersonalized, shownSet]);
 
     // After rendering, persist the currently featured URLs so next visit shows new ones
     useEffect(() => {
@@ -126,7 +128,16 @@ export function HomePage({ articles, onOpen }) {
                 <aside className="sidebar">
                     {interests.length > 0 && (
                         <div className="pref-box">
-                            <h3>Your interests</h3>
+                            <div className="pref-box-header">
+                                <h3>Your interests</h3>
+                                <button
+                                    className="pref-manage-btn"
+                                    onClick={() => navigate('/account')}
+                                    aria-label="Manage your interests"
+                                >
+                                    Manage
+                                </button>
+                            </div>
                             <div className="pref-tags">
                                 {interests.map((t) => (
                                     <span key={t} className="pref-tag">

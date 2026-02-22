@@ -55,12 +55,13 @@ function recencyWeight(ts) {
  * Build a term → weight map from click history.
  * Each history entry: { title, description, ts, terms? }
  */
-export function buildProfile(history) {
+export function buildProfile(history, suppressed = new Set()) {
     const profile = {};
     for (const item of history) {
         const w = recencyWeight(item.ts);
         const terms = item.terms ?? extractTerms(`${item.title} ${item.description ?? ''}`);
         for (const term of terms) {
+            if (suppressed.has(term)) continue;
             profile[term] = (profile[term] ?? 0) + w;
         }
     }
@@ -93,10 +94,10 @@ function score(article, profile, articles, idfCache) {
  * Rank articles by personalised relevance with source diversity.
  * Falls back to original order when history is empty.
  */
-export function rankArticles(articles, history) {
+export function rankArticles(articles, history, suppressed = new Set()) {
     if (!history.length) return articles;
 
-    const profile = buildProfile(history);
+    const profile = buildProfile(history, suppressed);
     if (!Object.keys(profile).length) return articles;
 
     const idfCache = {};
@@ -123,11 +124,11 @@ export function rankArticles(articles, history) {
         .sort((a, b) => b._final - a._final);
 }
 
-/** Top interest labels for display (top 6 by weight) */
-export function topInterests(history) {
-    const profile = buildProfile(history);
+/** Top interest labels for display */
+export function topInterests(history, suppressed = new Set(), limit = 6) {
+    const profile = buildProfile(history, suppressed);
     return Object.entries(profile)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 6)
+        .slice(0, limit)
         .map(([term]) => term);
 }

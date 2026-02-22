@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { extractTerms, topInterests } from '../utils/recommend';
-import { HISTORY_LS_KEY } from '../config.js';
+import { HISTORY_LS_KEY, SUPPRESSED_LS_KEY } from '../config.js';
 
 const PersonalizationContext = createContext(null);
 
@@ -10,6 +10,15 @@ export function PersonalizationProvider({ children }) {
             return JSON.parse(localStorage.getItem(HISTORY_LS_KEY) ?? '[]');
         } catch {
             return [];
+        }
+    });
+
+    const [suppressedTerms, setSuppressedTerms] = useState(() => {
+        try {
+            const arr = JSON.parse(localStorage.getItem(SUPPRESSED_LS_KEY) ?? '[]');
+            return new Set(arr);
+        } catch {
+            return new Set();
         }
     });
 
@@ -42,11 +51,32 @@ export function PersonalizationProvider({ children }) {
         setHistory([]);
     }, []);
 
-    const interests = topInterests(history);
+    /** Suppress a specific interest term from scoring and display */
+    const suppressTerm = useCallback((term) => {
+        setSuppressedTerms((prev) => {
+            const next = new Set(prev);
+            next.add(term);
+            localStorage.setItem(SUPPRESSED_LS_KEY, JSON.stringify([...next]));
+            return next;
+        });
+    }, []);
+
+    /** Full reset — clears reading history and all suppressed terms */
+    const clearAllRecommendations = useCallback(() => {
+        localStorage.removeItem(HISTORY_LS_KEY);
+        localStorage.removeItem(SUPPRESSED_LS_KEY);
+        setHistory([]);
+        setSuppressedTerms(new Set());
+    }, []);
+
+    const interests = useMemo(
+        () => topInterests(history, suppressedTerms),
+        [history, suppressedTerms]
+    );
 
     return (
         <PersonalizationContext.Provider
-            value={{ history, trackRead, clearHistory, interests }}
+            value={{ history, trackRead, clearHistory, interests, suppressedTerms, suppressTerm, clearAllRecommendations }}
         >
             {children}
         </PersonalizationContext.Provider>

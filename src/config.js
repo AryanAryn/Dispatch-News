@@ -20,6 +20,9 @@ export const NEWS_LS_KEY = 'dispatch_newsapi_key';
 /** localStorage key where reading history is stored */
 export const HISTORY_LS_KEY = 'dispatch_history';
 
+/** localStorage key where suppressed recommendation terms are stored */
+export const SUPPRESSED_LS_KEY = 'dispatch_suppressed';
+
 /**
  * NewsAPI base URL.
  * Dev:  Vite's dev-server proxy forwards /newsapi → newsapi.org (no CORS).

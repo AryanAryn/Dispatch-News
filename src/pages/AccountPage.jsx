@@ -1,13 +1,23 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStoredKey, clearStoredKey } from '../api/newsApi';
+import { usePersonalization } from '../context/PersonalizationContext';
+import { topInterests } from '../utils/recommend';
 import { Masthead } from '../components/Masthead';
 
 export function AccountPage({ onClearKey }) {
     const navigate = useNavigate();
     const [revealed, setRevealed] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
     const storedKey = getStoredKey();
+    const { history, suppressedTerms, suppressTerm, clearAllRecommendations } = usePersonalization();
+    const activeInterests = useMemo(
+        () => topInterests(history, suppressedTerms, 20),
+        [history, suppressedTerms]
+    );
+
+    useEffect(() => { document.title = `Account — The Dispatch`; }, []);
 
     const maskedKey = storedKey
         ? storedKey.slice(0, 6) + '••••••••••••••••••••' + storedKey.slice(-4)
@@ -35,7 +45,7 @@ export function AccountPage({ onClearKey }) {
                 onSearch={handleSearch}
             />
 
-            <div className="content-wrapper">
+            <main className="content-wrapper">
                 <div className="account-page">
                     <div className="account-header">
                         <div className="account-avatar">
@@ -85,6 +95,69 @@ export function AccountPage({ onClearKey }) {
                     </section>
 
                     <section className="account-section">
+                        <h2 className="account-section-title">My interests</h2>
+
+                        {activeInterests.length > 0 ? (
+                            <>
+                                <p className="account-key-note">
+                                    {history.length} {history.length === 1 ? 'article' : 'articles'} read
+                                    {' — tap × to remove a topic from your feed.'}
+                                </p>
+                                <ul className="interest-tags" aria-label="Your interest topics">
+                                    {activeInterests.map((term) => (
+                                        <li key={term} className="interest-tag">
+                                            <span>{term}</span>
+                                            <button
+                                                className="interest-tag-remove"
+                                                aria-label={`Remove ${term}`}
+                                                onClick={() => suppressTerm(term)}
+                                            >
+                                                ×
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        ) : (
+                            <p className="account-key-note">
+                                {history.length > 0
+                                    ? 'All topics cleared — keep reading to rebuild your profile.'
+                                    : 'No interests yet — start reading articles to personalise your feed.'}
+                            </p>
+                        )}
+
+                        {(history.length > 0 || suppressedTerms.size > 0) && (
+                            !showResetConfirm ? (
+                                <button
+                                    className="account-btn-danger"
+                                    style={{ marginTop: '16px' }}
+                                    onClick={() => setShowResetConfirm(true)}
+                                >
+                                    Reset all recommendations
+                                </button>
+                            ) : (
+                                <div className="account-confirm" style={{ marginTop: '16px' }}>
+                                    <p>This clears your reading history and all topic customisations. Your API key is not affected.</p>
+                                    <div className="account-confirm-btns">
+                                        <button
+                                            className="account-btn-danger"
+                                            onClick={() => { clearAllRecommendations(); setShowResetConfirm(false); }}
+                                        >
+                                            Yes, reset all
+                                        </button>
+                                        <button
+                                            className="account-btn-ghost"
+                                            onClick={() => setShowResetConfirm(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )
+                        )}
+                    </section>
+
+                    <section className="account-section">
                         <h2 className="account-section-title">Actions</h2>
 
                         {!showConfirm ? (
@@ -113,7 +186,7 @@ export function AccountPage({ onClearKey }) {
                         ← Back
                     </button>
                 </div>
-            </div>
+            </main>
         </>
     );
 }

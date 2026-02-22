@@ -635,11 +635,37 @@ nav button.active {
     margin-bottom: 20px;
 }
 
+.pref-box-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
 .pref-box h3 {
     font-family: var(--serif);
     font-size: var(--text-base);
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 0;
+}
+
+.pref-manage-btn {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.7);
+    font-family: var(--ui);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    padding: 3px 9px;
+    cursor: pointer;
+    letter-spacing: 0;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.pref-manage-btn:hover {
+    border-color: var(--paper);
+    color: var(--paper);
+    background: none;
 }
 
 .pref-tags {
@@ -1538,6 +1564,52 @@ footer p {
 
 .account-back:hover {
     background: var(--red);
+}
+
+/* ─── INTEREST TAGS ─── */
+.interest-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+}
+
+.interest-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--ui);
+    font-size: var(--text-sm);
+    background: #f0f0ee;
+    border: 1px solid var(--light);
+    padding: 4px 8px 4px 12px;
+    color: var(--ink);
+}
+
+.interest-tag span {
+    line-height: 1;
+}
+
+.interest-tag-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 5px;
+    color: var(--mid);
+    font-size: 13px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+}
+
+.interest-tag-remove:hover,
+.interest-tag-remove:focus-visible {
+    color: var(--red);
+    background: none;
+    outline: none;
 }
 
 /* ─── STATIC PAGES (About / Privacy / Terms / Contact) ─── */
