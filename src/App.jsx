@@ -110,23 +110,38 @@ function ApiKeyScreen({ onSave }) {
         e.preventDefault();
         const trimmed = key.trim();
         if (!trimmed) { setError('Please enter your API key.'); return; }
-        setTesting(true);
-        setError('');
-        try {
-            // Quick validation — ping the top-headlines endpoint
-            const res = await fetch(
-                `${NEWS_BASE}/top-headlines?language=en&pageSize=1`,
-                { headers: { 'X-Api-Key': trimmed } }
-            );
-            const data = await res.json();
-            if (data.status !== 'ok') throw new Error(data.message ?? 'Invalid key');
-            setStoredKey(trimmed);
-            onSave();
-        } catch (err) {
-            setError(err.message ?? 'Could not validate key — check it and try again.');
-        } finally {
-            setTesting(false);
+        // NewsAPI keys are 32 hex characters
+        if (!/^[0-9a-f]{32}$/i.test(trimmed)) {
+            setError('That doesn\'t look like a valid NewsAPI key (32-character hex string).');
+            return;
         }
+
+        // In dev (Vite proxy available) or prod with worker configured: do a live ping
+        const canValidateLive = import.meta.env.DEV || Boolean(import.meta.env.VITE_PROXY_URL);
+        if (canValidateLive) {
+            setTesting(true);
+            setError('');
+            try {
+                const res = await fetch(
+                    `${NEWS_BASE}/top-headlines?language=en&pageSize=1`,
+                    { headers: { 'X-Api-Key': trimmed } }
+                );
+                let data;
+                try { data = await res.json(); } catch {
+                    throw new Error('Unexpected response — proxy may not be reachable.');
+                }
+                if (data.status !== 'ok') throw new Error(data.message ?? 'Invalid key');
+            } catch (err) {
+                setError(err.message ?? 'Could not validate key — check it and try again.');
+                setTesting(false);
+                return;
+            } finally {
+                setTesting(false);
+            }
+        }
+
+        setStoredKey(trimmed);
+        onSave();
     }
 
     return (

@@ -34,9 +34,9 @@ export const SPORTS_BASE = import.meta.env.DEV
 
 /** Well-known league IDs tracked in the scores band */
 export const LEAGUES = [
-    { id: 4328, name: 'Premier League',   sport: 'soccer'     },
-    { id: 4480, name: 'Champions League', sport: 'soccer'     },
-    { id: 4387, name: 'NBA',              sport: 'basketball' },
-    { id: 4391, name: 'NFL',              sport: 'football'   },
-    { id: 4424, name: 'MLB',              sport: 'baseball'   },
+    { id: 4328, name: 'Premier League', sport: 'soccer' },
+    { id: 4480, name: 'Champions League', sport: 'soccer' },
+    { id: 4387, name: 'NBA', sport: 'basketball' },
+    { id: 4391, name: 'NFL', sport: 'football' },
+    { id: 4424, name: 'MLB', sport: 'baseball' },
 ];
