@@ -1,18 +1,17 @@
 import { useEffect, useRef } from 'react';
 
+// Publisher ID is set directly in index.html <script> and mirrored here for
+// the data-ad-client attribute on each <ins> tag.
+const PUB_ID = 'ca-pub-4943024009014829';
+
 /**
  * AdUnit – wrapper for a single Google AdSense `<ins>` placement.
  *
- * Usage:
- *   <AdUnit slot="1234567890" />
+ * Usage:  <AdUnit slot="1234567890" />
  *
- * Setup:
- *   1. Add the AdSense <script> to index.html (already done).
- *   2. Set VITE_ADSENSE_PUB_ID=ca-pub-XXXXXXXXXXXXXXXX in .env
- *   3. Replace the `slot` prop value with your real ad unit slot ID.
- *
- * The component is safe to render even when an ad blocker is active;
- * the push() call is wrapped in try/catch.
+ * Replace the `slot` prop value with your real ad unit slot ID from
+ * the AdSense dashboard. The component silently no-ops when an ad
+ * blocker is active.
  */
 export function AdUnit({ slot, format = 'auto', className = '' }) {
     const pushed = useRef(false);
@@ -27,15 +26,12 @@ export function AdUnit({ slot, format = 'auto', className = '' }) {
         }
     }, []);
 
-    const pubId =
-        import.meta.env.VITE_ADSENSE_PUB_ID ?? 'ca-pub-XXXXXXXXXXXXXXXXX';
-
     return (
         <div className={`ad-unit ${className}`.trim()}>
             <ins
                 className="adsbygoogle"
                 style={{ display: 'block' }}
-                data-ad-client={pubId}
+                data-ad-client={PUB_ID}
                 data-ad-slot={slot}
                 data-ad-format={format}
                 data-full-width-responsive="true"

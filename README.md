@@ -55,7 +55,6 @@ Create a `.env` file in the project root (copy from `.env.example` if present):
 ```env
 VITE_NEWSAPI_KEY=your_newsapi_key_here
 VITE_SPORTSDB_KEY=3                          # free public key; upgrade for live scores
-VITE_ADSENSE_PUB_ID=ca-pub-XXXXXXXXXXXXXXXXX # optional
 ```
 
 Get a free NewsAPI key at [newsapi.org/register](https://newsapi.org/register).
@@ -88,7 +87,6 @@ The repo includes a ready-made workflow at [`.github/workflows/deploy.yml`](.git
    |---|---|
    | `VITE_NEWSAPI_KEY` | your NewsAPI key |
    | `VITE_SPORTSDB_KEY` | `3` or a paid key |
-   | `VITE_ADSENSE_PUB_ID` | your AdSense publisher ID |
 
 3. Push to `main` — the workflow builds and deploys automatically.
 4. Your site will be live at `https://<username>.github.io/<repo-name>/`.
@@ -130,9 +128,9 @@ src/
 
 ## Enabling Google AdSense
 
-1. Uncomment the `<script>` tag in [`index.html`](index.html) and replace the placeholder publisher ID.
-2. Set `VITE_ADSENSE_PUB_ID` in `.env` (and as a GitHub secret for deployments).
-3. Replace the `slot` prop values on the `<AdUnit>` components in `HomePage.jsx` and `CategoryPage.jsx` with your real ad unit slot IDs.
+The AdSense publisher ID (`ca-pub-4943024009014829`) is set directly in [`index.html`](index.html) and in `AdUnit.jsx` — no environment variable needed.
+
+1. Replace the `slot` prop values on the `<AdUnit>` components in `HomePage.jsx` and `CategoryPage.jsx` with your real ad unit slot IDs from the AdSense dashboard.
 
 ---
 

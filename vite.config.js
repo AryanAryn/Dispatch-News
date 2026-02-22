@@ -1,14 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// On GitHub Pages the site lives at  /<repo-name>/
-// Locally (and on custom domains) it lives at /
-const base = process.env.GITHUB_ACTIONS
-    ? `/${process.env.GITHUB_REPOSITORY?.split('/')[1] ?? ''}/`
-    : '/';
-
 export default defineConfig({
-    base,
+    // Custom domain (news.aryanaryn.me) → site always lives at root /
+    base: '/',
     plugins: [react()],
     server: {
         proxy: {

@@ -30,15 +30,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Inject secrets as environment variables so Vite embeds them at build time.
-      # Add each secret in:  Settings → Secrets and variables → Actions → New secret
+      # Inject API keys at build time.
+      # Add VITE_NEWSAPI_KEY and VITE_SPORTSDB_KEY as repo secrets:
+      #   Settings → Secrets and variables → Actions → New secret
       - name: Build
         env:
-          VITE_NEWSAPI_KEY:      ${{ secrets.VITE_NEWSAPI_KEY }}
-          VITE_SPORTSDB_KEY:     ${{ secrets.VITE_SPORTSDB_KEY }}
-          VITE_ADSENSE_PUB_ID:   ${{ secrets.VITE_ADSENSE_PUB_ID }}
-          GITHUB_REPOSITORY:     ${{ github.repository }}  # used by vite.config.js for base path
-          GITHUB_ACTIONS:        "true"
+          VITE_NEWSAPI_KEY:  ${{ secrets.VITE_NEWSAPI_KEY }}
+          VITE_SPORTSDB_KEY: ${{ secrets.VITE_SPORTSDB_KEY }}
         run: npm run build
 
       - name: Upload Pages artifact
