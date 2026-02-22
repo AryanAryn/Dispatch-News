@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import { extractTerms, topInterests } from '../utils/recommend';
+import { HISTORY_LS_KEY } from '../config.js';
 
 const PersonalizationContext = createContext(null);
 
 export function PersonalizationProvider({ children }) {
     const [history, setHistory] = useState(() => {
         try {
-            return JSON.parse(localStorage.getItem('dispatch_history') ?? '[]');
+            return JSON.parse(localStorage.getItem(HISTORY_LS_KEY) ?? '[]');
         } catch {
             return [];
         }
@@ -30,14 +31,14 @@ export function PersonalizationProvider({ children }) {
                 0,
                 120
             );
-            localStorage.setItem('dispatch_history', JSON.stringify(next));
+            localStorage.setItem(HISTORY_LS_KEY, JSON.stringify(next));
             return next;
         });
     }, []);
 
     /** Remove all stored history */
     const clearHistory = useCallback(() => {
-        localStorage.removeItem('dispatch_history');
+        localStorage.removeItem(HISTORY_LS_KEY);
         setHistory([]);
     }, []);
 

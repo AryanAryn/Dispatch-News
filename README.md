@@ -48,16 +48,16 @@ cd dispatch-news
 npm install
 ```
 
-### 2. Add your API keys
+### 2. Configure environment variables
 
-Create a `.env` file in the project root (copy from `.env.example` if present):
+Create a `.env` file in the project root:
 
 ```env
-VITE_NEWSAPI_KEY=your_newsapi_key_here
-VITE_SPORTSDB_KEY=3                          # free public key; upgrade for live scores
+VITE_SPORTSDB_KEY=3                # free public key; upgrade for live scores
+VITE_PROXY_URL=                    # your Cloudflare Worker URL (see below)
 ```
 
-Get a free NewsAPI key at [newsapi.org/register](https://newsapi.org/register).
+> **No `VITE_NEWSAPI_KEY` needed.** Users enter their own key directly in the app on first visit. It is stored in their browser's `localStorage` only and never sent anywhere except NewsAPI.
 
 ### 3. Run locally
 
@@ -65,7 +65,7 @@ Get a free NewsAPI key at [newsapi.org/register](https://newsapi.org/register).
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). The Vite dev server proxies `/newsapi` and `/sportsdb` automatically, so you won't hit any CORS issues.
+Open [http://localhost:5173](http://localhost:5173). On first visit you'll be prompted to enter your NewsAPI key. The Vite dev server proxies `/newsapi` and `/sportsdb` automatically, so you won't hit CORS issues locally.
 
 ### 4. Production build
 
@@ -81,17 +81,51 @@ npm run preview   # serve the dist/ folder locally
 The repo includes a ready-made workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
 1. **Enable Pages** in your repo: Settings → Pages → Source → **GitHub Actions**
-2. **Add secrets** in Settings → Secrets and variables → Actions:
+2. **Add secret** in Settings → Secrets and variables → Actions → **Secrets**:
 
    | Secret | Value |
    |---|---|
-   | `VITE_NEWSAPI_KEY` | your NewsAPI key |
    | `VITE_SPORTSDB_KEY` | `3` or a paid key |
 
-3. Push to `main` — the workflow builds and deploys automatically.
-4. Your site will be live at `https://<username>.github.io/<repo-name>/`.
+3. **Add variable** in Settings → Secrets and variables → Actions → **Variables**:
 
-> **NewsAPI CORS note:** The free NewsAPI plan blocks browser requests from non-`localhost` origins. For a fully public deployment you'll need a lightweight serverless proxy (Cloudflare Worker, Vercel function, etc.) in front of the NewsAPI calls. TheSportsDB's public endpoint is CORS-open and works fine without a proxy.
+   | Variable | Value |
+   |---|---|
+   | `VITE_PROXY_URL` | your Cloudflare Worker URL (see below) |
+
+4. Push to `main` — the workflow builds and deploys automatically.
+5. Your site will be live at `https://news.aryanaryn.me`.
+
+---
+
+## Cloudflare Worker (CORS Proxy)
+
+NewsAPI blocks direct browser requests from non-`localhost` origins on the free plan. The worker source lives in [`worker/`](worker/) inside this repo. It acts as a transparent CORS proxy — no API key is stored server-side; users supply their own key from the browser, forwarded as the `X-Api-Key` header.
+
+### First-time setup
+
+```bash
+# Install Wrangler globally (once)
+npm install -g wrangler
+
+# Log in to Cloudflare
+wrangler login
+
+# Deploy
+cd worker
+npm install
+npm run deploy
+```
+
+Wrangler will print your worker URL, e.g. `https://dispatch-proxy.YOUR_ACCOUNT.workers.dev`.
+Copy that URL into:
+
+- `.env` → `VITE_PROXY_URL=https://dispatch-proxy.YOUR_ACCOUNT.workers.dev`
+- GitHub repo variable `VITE_PROXY_URL` (Settings → Secrets and variables → Variables)
+
+No secrets need to be set on the worker — it reads the user's key from the `X-Api-Key` request header at runtime.
+
+> **CI/CD**: pushing any file under `worker/` triggers [`.github/workflows/deploy-worker.yml`](.github/workflows/deploy-worker.yml), which redeploys the worker automatically. Add a `CF_API_TOKEN` secret (Cloudflare API token with *Workers Scripts: Edit* permission) in Settings → Secrets and variables → Actions → Secrets.
 
 ---
 

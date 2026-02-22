@@ -1,0 +1,27 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'worker/**'     # only runs when worker files change
+  workflow_dispatch:    # manual trigger from the Actions tab
+
+jobs:
+  deploy:
+    name: Deploy Worker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via Wrangler
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: worker   # all wrangler commands run from worker/
+          # No secrets needed on the worker itself — users pass their own NewsAPI
+          # key at runtime via the X-Api-Key request header.

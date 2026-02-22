@@ -1,0 +1,17 @@
+name = "dispatch-proxy"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# ── Non-secret environment variables ─────────────────────────────────────────
+# Lock ALLOWED_ORIGIN to your frontend domain.
+# This prevents other websites from using your worker as a free proxy.
+[vars]
+ALLOWED_ORIGIN = "https://news.aryanaryn.me"
+
+# ── Deployment environments (optional) ───────────────────────────────────────
+# Uncomment to add a staging environment:
+#
+# [env.staging]
+# name = "dispatch-proxy-staging"
+# [env.staging.vars]
+# ALLOWED_ORIGIN = "http://localhost:5173"

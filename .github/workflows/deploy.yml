@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - master          # remove whichever you don't use
+    paths-ignore:
+      - 'worker/**'     # worker changes are handled by deploy-worker.yml
   workflow_dispatch:    # allows manual trigger from the Actions tab
 
 # Allow only one concurrent deployment; cancel in-flight runs
@@ -30,13 +32,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Inject API keys at build time.
-      # Add VITE_NEWSAPI_KEY and VITE_SPORTSDB_KEY as repo secrets:
-      #   Settings → Secrets and variables → Actions → New secret
+      # Inject build-time variables.
+      # VITE_SPORTSDB_KEY: add as a repo secret (Settings → Secrets and variables → Actions)
+      # VITE_PROXY_URL: add as a repo variable (Settings → Secrets and variables → Variables)
+      # No VITE_NEWSAPI_KEY needed — users enter their own key in the browser.
       - name: Build
         env:
-          VITE_NEWSAPI_KEY:  ${{ secrets.VITE_NEWSAPI_KEY }}
           VITE_SPORTSDB_KEY: ${{ secrets.VITE_SPORTSDB_KEY }}
+          VITE_PROXY_URL:    ${{ vars.VITE_PROXY_URL }}
         run: npm run build
 
       - name: Upload Pages artifact

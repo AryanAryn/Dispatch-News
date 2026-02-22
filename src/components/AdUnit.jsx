@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { ADSENSE_PUB_ID } from '../config.js';
 
 // Publisher ID is set directly in index.html <script> and mirrored here for
 // the data-ad-client attribute on each <ins> tag.
-const PUB_ID = 'ca-pub-4943024009014829';
+const PUB_ID = ADSENSE_PUB_ID;
 
 /**
  * AdUnit – wrapper for a single Google AdSense `<ins>` placement.

@@ -1,18 +1,12 @@
 /**
  * TheSportsDB API wrapper.
- *
- * Free public key: "3"  →  https://www.thesportsdb.com/api/v1/json/3/
- * Set VITE_SPORTSDB_KEY in .env for a paid key.
- *
- * Vite dev-server proxies  /sportsdb  →  https://www.thesportsdb.com
- * so CORS is handled in development.
+ * Base URL and league list are configured in src/config.js.
  */
 
-const KEY = import.meta.env.VITE_SPORTSDB_KEY ?? '3';
-// Dev: use Vite proxy; Production: call TheSportsDB directly (CORS-open endpoint).
-const BASE = import.meta.env.DEV
-    ? `/sportsdb/api/v1/json/${KEY}`
-    : `https://www.thesportsdb.com/api/v1/json/${KEY}`;
+import { SPORTS_BASE, LEAGUES as _LEAGUES } from '../config.js';
+
+export { _LEAGUES as LEAGUES };
+const BASE = SPORTS_BASE;
 
 // ─── Simple cache ─────────────────────────────────────────────────────────────
 const _cache = new Map();
@@ -26,15 +20,6 @@ async function cachedFetch(url) {
     setTimeout(() => _cache.delete(url), 5 * 60 * 1000);
     return data;
 }
-
-// ─── Well-known league IDs ────────────────────────────────────────────────────
-export const LEAGUES = [
-    { id: 4328, name: 'Premier League', sport: 'soccer' },
-    { id: 4480, name: 'Champions League', sport: 'soccer' },
-    { id: 4387, name: 'NBA', sport: 'basketball' },
-    { id: 4391, name: 'NFL', sport: 'football' },
-    { id: 4424, name: 'MLB', sport: 'baseball' },
-];
 
 // ─── API calls ────────────────────────────────────────────────────────────────
 

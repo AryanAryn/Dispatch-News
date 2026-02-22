@@ -1,23 +1,25 @@
-const API_KEY = import.meta.env.VITE_NEWSAPI_KEY;
+import { NEWS_LS_KEY, NEWS_BASE } from '../config.js';
 
-// In development the Vite dev-server proxies /newsapi → https://newsapi.org.
-// In production (GitHub Pages / any static host) we call the API directly.
-// Note: NewsAPI requires server-side calls for production; set up a proxy or
-// serverless function if you hit CORS errors after deploying.
-const BASE = import.meta.env.DEV
-    ? '/newsapi/v2'
-    : 'https://newsapi.org/v2';
+/** Key management — stored in localStorage, never in env vars */
+export function getStoredKey() { return localStorage.getItem(NEWS_LS_KEY) ?? ''; }
+export function setStoredKey(key) { localStorage.setItem(NEWS_LS_KEY, key.trim()); }
+export function clearStoredKey() { localStorage.removeItem(NEWS_LS_KEY); }
+export function hasApiKey() { return Boolean(getStoredKey()); }
+
+const BASE = NEWS_BASE;
 
 function buildUrl(path, params) {
     const url = new URL(BASE + path, window.location.origin);
-    Object.entries({ ...params, apiKey: API_KEY }).forEach(([k, v]) => {
+    Object.entries(params).forEach(([k, v]) => {
         if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
     });
     return url.toString();
 }
 
 async function request(url) {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        headers: { 'X-Api-Key': getStoredKey() },
+    });
     const data = await res.json();
     if (data.status !== 'ok') throw new Error(data.message ?? 'NewsAPI error');
     return (data.articles ?? []).filter(
@@ -61,8 +63,4 @@ export async function fetchSearch(query, page = 1) {
         language: 'en',
     });
     return cachedFetch(url);
-}
-
-export function hasApiKey() {
-    return Boolean(API_KEY && API_KEY !== 'your_newsapi_key_here');
 }

@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { PersonalizationProvider, usePersonalization } from './context/PersonalizationContext';
 import { useNews } from './hooks/useNews';
-import { hasApiKey } from './api/newsApi';
+import { hasApiKey, setStoredKey, clearStoredKey } from './api/newsApi';
+import { NEWS_BASE } from './config.js';
 import { Masthead } from './components/Masthead';
 import { Ticker } from './components/Ticker';
 import { ArticleModal } from './components/ArticleModal';
@@ -10,7 +11,7 @@ import { CategoryPage } from './pages/CategoryPage';
 import { SearchPage } from './pages/SearchPage';
 
 // ─── Inner app (needs PersonalizationContext) ─────────────────────────────────
-function AppInner() {
+function AppInner({ onClearKey }) {
     const [section, setSection] = useState('home');
     const [searchQuery, setSearchQuery] = useState('');
     const [openArticle, setOpenArticle] = useState(null);
@@ -80,6 +81,18 @@ function AppInner() {
                     Powered by NewsAPI · All articles © their respective publishers ·
                     Personalised based on your reading history
                 </p>
+                <p style={{ marginTop: 8 }}>
+                    <button
+                        onClick={onClearKey}
+                        style={{
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontFamily: 'var(--ui)', fontSize: 11, color: 'var(--mid)',
+                            textDecoration: 'underline', padding: 0,
+                        }}
+                    >
+                        Change API key
+                    </button>
+                </p>
             </footer>
 
             <ArticleModal article={openArticle} onClose={handleClose} />
@@ -87,62 +100,96 @@ function AppInner() {
     );
 }
 
-// ─── No API key screen ─────────────────────────────────────────────────────────
-function NoKeyScreen() {
+// ─── API key entry screen ──────────────────────────────────────────────────────
+function ApiKeyScreen({ onSave }) {
+    const [key, setKey] = useState('');
+    const [error, setError] = useState('');
+    const [testing, setTesting] = useState(false);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const trimmed = key.trim();
+        if (!trimmed) { setError('Please enter your API key.'); return; }
+        setTesting(true);
+        setError('');
+        try {
+            // Quick validation — ping the top-headlines endpoint
+            const res = await fetch(
+                `${NEWS_BASE}/top-headlines?language=en&pageSize=1`,
+                { headers: { 'X-Api-Key': trimmed } }
+            );
+            const data = await res.json();
+            if (data.status !== 'ok') throw new Error(data.message ?? 'Invalid key');
+            setStoredKey(trimmed);
+            onSave();
+        } catch (err) {
+            setError(err.message ?? 'Could not validate key — check it and try again.');
+        } finally {
+            setTesting(false);
+        }
+    }
+
     return (
-        <div
-            style={{
-                maxWidth: 480,
-                margin: '80px auto',
-                padding: '0 24px',
-                textAlign: 'center',
-                fontFamily: 'var(--ui)',
-            }}
-        >
-            <div
-                style={{
-                    fontFamily: 'var(--serif)',
-                    fontSize: 'clamp(36px, 7vw, 64px)',
-                    fontWeight: 900,
-                    marginBottom: 32,
-                }}
-            >
+        <div style={{ maxWidth: 480, margin: '80px auto', padding: '0 24px', fontFamily: 'var(--ui)' }}>
+            <div style={{ textAlign: 'center', fontFamily: 'var(--serif)', fontSize: 'clamp(36px, 7vw, 64px)', fontWeight: 900, marginBottom: 32 }}>
                 The Dispatch
             </div>
-            <div
-                style={{
-                    border: '1px solid var(--red)',
-                    padding: '20px 24px',
-                    color: 'var(--red)',
-                    fontSize: 13,
-                    marginBottom: 20,
-                    textAlign: 'left',
-                }}
-            >
-                <strong>API key not configured.</strong>
-                <br />
-                Add your{' '}
-                <a
-                    href="https://newsapi.org"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'var(--red)' }}
-                >
-                    NewsAPI
-                </a>{' '}
-                key to the <code>.env</code> file:
-                <pre
-                    style={{
-                        marginTop: 12,
-                        background: '#f5f3ee',
-                        padding: '10px 14px',
-                        fontSize: 12,
-                        overflowX: 'auto',
-                    }}
-                >
-                    VITE_NEWSAPI_KEY=your_key_here
-                </pre>
-                Then restart the dev server with <code>npm run dev</code>.
+
+            <div style={{ borderTop: '3px solid var(--ink)', paddingTop: 24 }}>
+                <p style={{ fontSize: 14, lineHeight: 1.7, marginBottom: 20, color: 'var(--mid)' }}>
+                    Enter your free{' '}
+                    <a href="https://newsapi.org/register" target="_blank" rel="noopener noreferrer"
+                        style={{ color: 'var(--red)', fontWeight: 700 }}>
+                        NewsAPI key
+                    </a>{' '}
+                    to get started. Your key is stored only in your browser — it never leaves your device.
+                </p>
+
+                <form onSubmit={handleSubmit}>
+                    <div style={{ display: 'flex', gap: 0, border: '1px solid var(--ink)', marginBottom: 12 }}>
+                        <input
+                            type="text"
+                            value={key}
+                            onChange={(e) => setKey(e.target.value)}
+                            placeholder="Paste your NewsAPI key…"
+                            style={{
+                                flex: 1, border: 'none', padding: '10px 14px',
+                                fontFamily: 'var(--ui)', fontSize: 13, outline: 'none',
+                                color: 'var(--ink)', minWidth: 0,
+                            }}
+                            autoFocus
+                            spellCheck={false}
+                        />
+                        <button
+                            type="submit"
+                            disabled={testing}
+                            style={{
+                                background: 'var(--ink)', color: 'var(--paper)', border: 'none',
+                                padding: '10px 18px', cursor: testing ? 'wait' : 'pointer',
+                                fontFamily: 'var(--ui)', fontSize: 12, fontWeight: 700,
+                                letterSpacing: '0.06em', textTransform: 'uppercase',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {testing ? 'Checking…' : 'Save key'}
+                        </button>
+                    </div>
+
+                    {error && (
+                        <div style={{ border: '1px solid var(--red)', padding: '10px 14px', color: 'var(--red)', fontSize: 12, marginBottom: 12 }}>
+                            {error}
+                        </div>
+                    )}
+                </form>
+
+                <p style={{ fontSize: 11, color: 'var(--mid)', lineHeight: 1.6 }}>
+                    Don't have a key?{' '}
+                    <a href="https://newsapi.org/register" target="_blank" rel="noopener noreferrer"
+                        style={{ color: 'var(--ink)' }}>
+                        Register free at newsapi.org
+                    </a>{' '}
+                    — takes 30 seconds.
+                </p>
             </div>
         </div>
     );
@@ -150,10 +197,17 @@ function NoKeyScreen() {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function App() {
-    if (!hasApiKey()) return <NoKeyScreen />;
+    const [ready, setReady] = useState(hasApiKey);
+
+    function handleClearKey() {
+        clearStoredKey();
+        setReady(false);
+    }
+
+    if (!ready) return <ApiKeyScreen onSave={() => setReady(true)} />;
     return (
         <PersonalizationProvider>
-            <AppInner />
+            <AppInner onClearKey={handleClearKey} />
         </PersonalizationProvider>
     );
 }
