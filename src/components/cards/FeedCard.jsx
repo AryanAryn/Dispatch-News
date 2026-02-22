@@ -4,11 +4,18 @@ export function FeedCard({ article, onOpen }) {
     if (!article) return null;
     const letter = (article.source?.name ?? 'N')[0].toUpperCase();
     return (
-        <div className="feed-card" onClick={() => onOpen(article)}>
+        <article
+            className="feed-card"
+            tabIndex="0"
+            aria-label={article.title}
+            onClick={() => onOpen(article)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(article); } }}
+        >
             {article.urlToImage ? (
                 <img
                     src={article.urlToImage}
                     alt=""
+                    loading="lazy"
                     onError={(e) => {
                         e.target.replaceWith(
                             Object.assign(document.createElement('div'), {
@@ -24,10 +31,10 @@ export function FeedCard({ article, onOpen }) {
                 </div>
             )}
             <CardMeta source={article.source?.name} time={article.publishedAt} />
-            <div className="card-title">{article.title}</div>
+            <h3 className="card-title">{article.title}</h3>
             {article.description && (
                 <div className="card-desc">{article.description}</div>
             )}
-        </div>
+        </article>
     );
 }

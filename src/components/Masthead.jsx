@@ -70,11 +70,12 @@ export function Masthead({ activeSlug, onNavigate, onSearch }) {
                 <div className="logo-title">The Dispatch</div>
             </div>
 
-            <nav className={menuOpen ? 'open' : undefined}>
+            <nav aria-label="Main navigation" className={menuOpen ? 'open' : undefined}>
                 {NAV_SECTIONS.map((s) => (
                     <button
                         key={s.slug}
                         className={activeSlug === s.slug ? 'active' : undefined}
+                        aria-current={activeSlug === s.slug ? 'page' : undefined}
                         onClick={() => handleNavigate(s.slug)}
                     >
                         {s.label}

@@ -92,6 +92,13 @@ button:disabled {
     opacity: 0.6;
 }
 
+/* ─── FOCUS VISIBLE ─── */
+:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
 /* ─── MASTHEAD ─── */
 #masthead {
     border-bottom: 3px double var(--ink);

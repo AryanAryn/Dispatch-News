@@ -1,6 +1,7 @@
 # The Dispatch
 
 > A fast, personalised, NYT-style news aggregator — fully client-side, no backend required.
+> 100% AI vibe coded — built entirely with Claude Sonnet 4.6.
 
 **Live site:** [news.aryanaryn.me](https://news.aryanaryn.me)
 **Repository:** [github.com/AryanAryn/Dispatch-News](https://github.com/AryanAryn/Dispatch-News)
@@ -8,6 +9,7 @@
 ![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![Built with Claude](https://img.shields.io/badge/built%20with-Claude%20Sonnet%204.6-blueviolet?logo=anthropic&logoColor=white)
 
 ---
 
@@ -184,6 +186,12 @@ The publisher ID is set in `index.html` and `src/config.js`. To use your own:
 3. Update the `slot` prop on each `<AdUnit>` in `HomePage.jsx` and `CategoryPage.jsx`
 
 Ads appear only after your site is reviewed and approved by Google AdSense (typically 2–4 weeks).
+
+---
+
+## Built with AI
+
+This project is **100% AI vibe coded** — every line of code, design decision, and documentation was generated in collaboration with **[Claude Sonnet 4.6](https://www.anthropic.com/claude)** (Anthropic). No manual coding; purely prompt-driven development.
 
 ---
 

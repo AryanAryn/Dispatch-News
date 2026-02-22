@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SITE_NAME, CONTACT_EMAIL } from '../config.js';
 import { Masthead } from '../components/Masthead';
 
 export function TermsPage() {
     const navigate = useNavigate();
+    useEffect(() => { document.title = `Terms of service — The Dispatch`; }, []);
     return (
         <>
             <Masthead
@@ -12,7 +14,7 @@ export function TermsPage() {
                 onSearch={(q) => navigate(`/search?q=${encodeURIComponent(q)}`)}
             />
 
-            <div className="content-wrapper">
+            <main className="content-wrapper">
                 <div className="static-page">
                     <h1 className="static-page-title">Terms of Service</h1>
                     <p className="static-page-meta">Effective February 22, 2026</p>
@@ -101,12 +103,12 @@ export function TermsPage() {
                         </p>
                     </section>
                 </div>
-            </div>
+            </main>
 
             <footer>
                 <div className="f-logo">{SITE_NAME}</div>
                 <p>Powered by NewsAPI · All articles © their respective publishers</p>
-                <nav className="footer-nav">
+                <nav className="footer-nav" aria-label="Footer navigation">
                     <a href="#/about">About</a>
                     <a href="#/contact">Contact</a>
                     <a href="#/privacy">Privacy policy</a>

@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SITE_NAME, GITHUB_REPO, GITHUB_PROFILE, CONTACT_EMAIL } from '../config.js';
 import { Masthead } from '../components/Masthead';
 
 export function ContactPage() {
     const navigate = useNavigate();
+    useEffect(() => { document.title = `Contact — The Dispatch`; }, []);
     return (
         <>
             <Masthead
@@ -12,7 +14,7 @@ export function ContactPage() {
                 onSearch={(q) => navigate(`/search?q=${encodeURIComponent(q)}`)}
             />
 
-            <div className="content-wrapper">
+            <main className="content-wrapper">
                 <div className="static-page">
                     <h1 className="static-page-title">Contact</h1>
 
@@ -53,12 +55,12 @@ export function ContactPage() {
                         </a>
                     </section>
                 </div>
-            </div>
+            </main>
 
             <footer>
                 <div className="f-logo">{SITE_NAME}</div>
                 <p>Powered by NewsAPI · All articles © their respective publishers</p>
-                <nav className="footer-nav">
+                <nav className="footer-nav" aria-label="Footer navigation">
                     <a href="#/about">About</a>
                     <a href="#/contact">Contact</a>
                     <a href="#/privacy">Privacy policy</a>

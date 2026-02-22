@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SITE_NAME, GITHUB_REPO, GITHUB_PROFILE, CONTACT_EMAIL } from '../config.js';
 import { Masthead } from '../components/Masthead';
 
 export function AboutPage() {
     const navigate = useNavigate();
+    useEffect(() => { document.title = `About — The Dispatch`; }, []);
     return (
         <>
             <Masthead
@@ -12,7 +14,7 @@ export function AboutPage() {
                 onSearch={(q) => navigate(`/search?q=${encodeURIComponent(q)}`)}
             />
 
-            <div className="content-wrapper">
+            <main className="content-wrapper">
                 <div className="static-page">
                     <h1 className="static-page-title">About</h1>
 
@@ -65,14 +67,21 @@ export function AboutPage() {
                             {' '}Questions?{' '}
                             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
                         </p>
+                        <p>
+                            This project is <strong>100% AI vibe coded</strong> — every line of code,
+                            every design decision, and all documentation were generated entirely through
+                            conversational prompting with{' '}
+                            <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener noreferrer">Claude Sonnet 4.6</a>{' '}
+                            by Anthropic. No manual coding whatsoever.
+                        </p>
                     </section>
                 </div>
-            </div>
+            </main>
 
             <footer>
                 <div className="f-logo">{SITE_NAME}</div>
                 <p>Powered by NewsAPI · All articles © their respective publishers</p>
-                <nav className="footer-nav">
+                <nav className="footer-nav" aria-label="Footer navigation">
                     <a href="#/about">About</a>
                     <a href="#/contact">Contact</a>
                     <a href="#/privacy">Privacy policy</a>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
     HashRouter, Routes, Route,
     Navigate, useNavigate, useLocation, useSearchParams,
@@ -42,6 +42,20 @@ function AppInner({ onClearKey }) {
 
     const { articles, loading, error } = useNews({ section: apiSection, query: searchQuery });
 
+    // ── Per-page <title> ──────────────────────────────────────────────────────
+    useEffect(() => {
+        if (isSearch) {
+            document.title = searchQuery
+                ? `Search: ${searchQuery} — ${SITE_NAME}`
+                : `Search — ${SITE_NAME}`;
+        } else if (activeSlug === 'home') {
+            document.title = SITE_NAME;
+        } else {
+            const label = navEntry?.label ?? activeSlug;
+            document.title = `${label} — ${SITE_NAME}`;
+        }
+    }, [activeSlug, isSearch, searchQuery, navEntry]);
+
     const handleNavigate = useCallback((slug) => {
         navigate(slug === 'home' ? '/' : `/${slug}`);
         window.scrollTo(0, 0);
@@ -83,12 +97,12 @@ function AppInner({ onClearKey }) {
                 <Ticker articles={articles} />
             )}
 
-            <div className="content-wrapper">{renderPage()}</div>
+            <main className="content-wrapper">{renderPage()}</main>
 
             <footer>
                 <div className="f-logo">{SITE_NAME}</div>
                 <p>Powered by NewsAPI · All articles © their respective publishers</p>
-                <nav className="footer-nav">
+                <nav className="footer-nav" aria-label="Footer navigation">
                     <a href="#/about">About</a>
                     <a href="#/contact">Contact</a>
                     <a href="#/privacy">Privacy policy</a>
