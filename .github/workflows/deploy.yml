@@ -1,0 +1,66 @@
+name: Build & Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master          # remove whichever you don't use
+  workflow_dispatch:    # allows manual trigger from the Actions tab
+
+# Allow only one concurrent deployment; cancel in-flight runs
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Inject secrets as environment variables so Vite embeds them at build time.
+      # Add each secret in:  Settings → Secrets and variables → Actions → New secret
+      - name: Build
+        env:
+          VITE_NEWSAPI_KEY:      ${{ secrets.VITE_NEWSAPI_KEY }}
+          VITE_SPORTSDB_KEY:     ${{ secrets.VITE_SPORTSDB_KEY }}
+          VITE_ADSENSE_PUB_ID:   ${{ secrets.VITE_ADSENSE_PUB_ID }}
+          GITHUB_REPOSITORY:     ${{ github.repository }}  # used by vite.config.js for base path
+          GITHUB_ACTIONS:        "true"
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist          # Vite outputs to dist/
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    # Grant the job the permissions it needs to push to Pages
+    permissions:
+      pages:   write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
