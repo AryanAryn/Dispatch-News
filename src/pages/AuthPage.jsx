@@ -85,6 +85,13 @@ export function AuthPage({ onSave }) {
                     — takes 30 seconds.
                 </p>
             </div>
+
+            <nav className="footer-nav" style={{ marginTop: '24px' }}>
+                <a href="#/about">About</a>
+                <a href="#/privacy">Privacy policy</a>
+                <a href="#/terms">Terms of service</a>
+                <a href="#/contact">Contact</a>
+            </nav>
         </div>
     );
 }

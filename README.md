@@ -1,6 +1,9 @@
 # The Dispatch
 
-> **Built entirely with Claude Sonnet 4.6** — a NYT-style news aggregator demonstrating what a single AI coding session can produce from scratch.
+> A fast, personalised, NYT-style news aggregator — fully client-side, no backend required.
+
+**Live site:** [news.aryanaryn.me](https://news.aryanaryn.me)
+**Repository:** [github.com/AryanAryn/Dispatch-News](https://github.com/AryanAryn/Dispatch-News)
 
 ![React](https://img.shields.io/badge/React-18-61dafb?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?logo=vite&logoColor=white)
@@ -10,16 +13,18 @@
 
 ## Features
 
-- **NYT-style layout** — hero grid, three-column band, main + sidebar, editorial strip, and a full feed grid
-- **Personalised feed** — TF-IDF recommendation engine with NLP entity extraction (`compromise`) and exponential recency decay; adapts as you read
-- **Sports scores** — live results and upcoming fixtures via TheSportsDB API, shown as a horizontally-scrollable scores band
-- **Sports-aware search** — detects sports queries and surfaces match scores alongside news results
+- **NYT-style layout** — hero grid, three-column band, main + sidebar, editorial strip, and full feed grid
+- **Personalised feed** — TF-IDF + NLP recommendation engine with exponential recency decay; adapts as you read and surfaces fresh articles on every visit
+- **Sports scores** — live results and upcoming fixtures via TheSportsDB, shown as a horizontally-scrollable scores band
+- **Sports-aware search** — detects sports queries and surfaces match scores alongside articles
 - **Breaking-news ticker** — animated headline strip on the home page
-- **Article modal** — in-app preview with HTML stripping; opens the full story in its original publication
-- **Click history** — reading history stored in `localStorage`; powers the interest profile and "Recently read" sidebar
-- **Responsive** — mobile-first with a hamburger nav that collapses to a full-screen drawer on small screens
-- **Google AdSense ready** — `<AdUnit>` component pre-wired; just add your publisher ID
-- **CI/CD** — GitHub Actions workflow builds and deploys to GitHub Pages on every push to `main`
+- **Article modal** — in-app preview with HTML stripping; opens the full story at its original publication
+- **Click history** — stored in `localStorage`; powers the interest profile and "Recently read" sidebar
+- **Type system** — Minor Third (×1.200) scale with 11 CSS tokens (`--text-xs` to `--text-6xl`)
+- **Responsive** — mobile-first with a hamburger nav
+- **Google AdSense ready** — `<AdUnit>` component pre-wired; add your publisher ID and slots
+- **Footer pages** — About, Privacy Policy, Terms of Service, and Contact pages included
+- **CI/CD** — GitHub Actions builds and deploys to GitHub Pages on every push to `main`
 
 ---
 
@@ -28,12 +33,14 @@
 | Layer | Choice |
 |---|---|
 | Framework | React 18 + Vite 5 |
-| Styling | Plain CSS with design tokens (`--serif`, `--body`, `--ui`) |
-| Fonts | Playfair Display · Merriweather · Barlow Condensed |
+| Routing | React Router v6 (hash-based for GitHub Pages) |
+| Styling | Plain CSS with design tokens |
+| Fonts | Playfair Display · Merriweather · Roboto Condensed · IBM Plex Serif |
 | NLP | [compromise](https://github.com/spencermountain/compromise) v14 |
 | News data | [NewsAPI](https://newsapi.org) |
 | Sports data | [TheSportsDB](https://www.thesportsdb.com) v1 |
 | Ads | Google AdSense |
+| CORS proxy | Cloudflare Worker (source in `worker/`) |
 | Hosting | GitHub Pages (via GitHub Actions) |
 
 ---
@@ -43,8 +50,8 @@
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/<you>/dispatch-news.git
-cd dispatch-news
+git clone https://github.com/AryanAryn/Dispatch-News.git
+cd Dispatch-News
 npm install
 ```
 
@@ -53,79 +60,77 @@ npm install
 Create a `.env` file in the project root:
 
 ```env
-VITE_SPORTSDB_KEY=3                # free public key; upgrade for live scores
-VITE_PROXY_URL=                    # your Cloudflare Worker URL (see below)
+VITE_SPORTSDB_KEY=3          # free public key; upgrade for higher rate limits
+VITE_PROXY_URL=              # your Cloudflare Worker URL (see below)
 ```
 
-> **No `VITE_NEWSAPI_KEY` needed.** Users enter their own key directly in the app on first visit. It is stored in their browser's `localStorage` only and never sent anywhere except NewsAPI.
+> **No `VITE_NEWSAPI_KEY` needed.** Users enter their own key on first visit. It is stored in `localStorage` only and never sent to any server you control.
 
-### 3. Run locally
+### 3. Site identity (for forks)
+
+Open `src/config.js` and update the identity block at the top:
+
+```js
+export const SITE_NAME      = 'The Dispatch';
+export const SITE_OWNER     = 'Your Name';
+export const GITHUB_REPO    = 'https://github.com/you/your-fork';
+export const GITHUB_PROFILE = 'https://github.com/you';
+export const CONTACT_EMAIL  = 'you@example.com';
+```
+
+These values are used throughout the About, Privacy Policy, Terms, and Contact pages.
+
+### 4. Run locally
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). On first visit you'll be prompted to enter your NewsAPI key. The Vite dev server proxies `/newsapi` and `/sportsdb` automatically, so you won't hit CORS issues locally.
+Open [http://localhost:5173](http://localhost:5173). On first visit you will be prompted for your NewsAPI key. Vite proxies requests locally — no CORS issues.
 
-### 4. Production build
+### 5. Production build
 
 ```bash
 npm run build
-npm run preview   # serve the dist/ folder locally
+npm run preview
 ```
 
 ---
 
 ## Deploying to GitHub Pages
 
-The repo includes a ready-made workflow at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+A ready-made workflow lives at `.github/workflows/deploy.yml`.
 
-1. **Enable Pages** in your repo: Settings → Pages → Source → **GitHub Actions**
-2. **Add secret** in Settings → Secrets and variables → Actions → **Secrets**:
+1. **Enable Pages**: Settings → Pages → Source → **GitHub Actions**
+2. **Add secret** (Settings → Secrets and variables → Actions → Secrets):
 
    | Secret | Value |
    |---|---|
    | `VITE_SPORTSDB_KEY` | `3` or a paid key |
 
-3. **Add variable** in Settings → Secrets and variables → Actions → **Variables**:
+3. **Add variable** (Settings → Secrets and variables → Actions → Variables):
 
    | Variable | Value |
    |---|---|
-   | `VITE_PROXY_URL` | your Cloudflare Worker URL (see below) |
+   | `VITE_PROXY_URL` | your Cloudflare Worker URL |
 
 4. Push to `main` — the workflow builds and deploys automatically.
-5. Your site will be live at `https://news.aryanaryn.me`.
 
 ---
 
 ## Cloudflare Worker (CORS Proxy)
 
-NewsAPI blocks direct browser requests from non-`localhost` origins on the free plan. The worker source lives in [`worker/`](worker/) inside this repo. It acts as a transparent CORS proxy — no API key is stored server-side; users supply their own key from the browser, forwarded as the `X-Api-Key` header.
-
-### First-time setup
+NewsAPI blocks direct browser requests from non-`localhost` origins on the free plan. The worker in `worker/` is a transparent CORS proxy — the user's key is forwarded as the `X-Api-Key` header; no key is stored server-side.
 
 ```bash
-# Install Wrangler globally (once)
 npm install -g wrangler
-
-# Log in to Cloudflare
 wrangler login
-
-# Deploy
-cd worker
-npm install
-npm run deploy
+cd worker && npm install && npm run deploy
 ```
 
-Wrangler will print your worker URL, e.g. `https://dispatch-proxy.YOUR_ACCOUNT.workers.dev`.
-Copy that URL into:
+Copy the printed worker URL into `.env` (`VITE_PROXY_URL=...`) and the GitHub repo variable of the same name.
 
-- `.env` → `VITE_PROXY_URL=https://dispatch-proxy.YOUR_ACCOUNT.workers.dev`
-- GitHub repo variable `VITE_PROXY_URL` (Settings → Secrets and variables → Variables)
-
-No secrets need to be set on the worker — it reads the user's key from the `X-Api-Key` request header at runtime.
-
-> **CI/CD**: pushing any file under `worker/` triggers [`.github/workflows/deploy-worker.yml`](.github/workflows/deploy-worker.yml), which redeploys the worker automatically. Add a `CF_API_TOKEN` secret (Cloudflare API token with *Workers Scripts: Edit* permission) in Settings → Secrets and variables → Actions → Secrets.
+> **CI/CD**: pushing any file under `worker/` triggers `.github/workflows/deploy-worker.yml`. Requires a `CF_API_TOKEN` secret with *Workers Scripts: Edit* permission.
 
 ---
 
@@ -137,11 +142,11 @@ src/
 │   ├── newsApi.js          # NewsAPI wrapper with 5-min cache
 │   └── sportsApi.js        # TheSportsDB wrapper
 ├── components/
-│   ├── cards/              # HeroMain, HeroSecondary, ColCard, ListCard, FeedCard, EditorialCard
-│   ├── sports/             # ScoreCard, ScoresBand
-│   ├── AdUnit.jsx          # Google AdSense wrapper
+│   ├── cards/              # HeroMain · HeroSecondary · ColCard · ListCard · FeedCard · EditorialCard
+│   ├── sports/             # ScoreCard · ScoresBand
+│   ├── AdUnit.jsx
 │   ├── ArticleModal.jsx
-│   ├── Masthead.jsx        # Header + hamburger nav
+│   ├── Masthead.jsx
 │   ├── SectionHead.jsx
 │   └── Ticker.jsx
 ├── context/
@@ -150,24 +155,38 @@ src/
 │   ├── useNews.js
 │   └── useSports.js
 ├── pages/
-│   ├── CategoryPage.jsx    # Sports tab gets a special rich layout
+│   ├── AboutPage.jsx
+│   ├── AccountPage.jsx
+│   ├── AuthPage.jsx
+│   ├── CategoryPage.jsx
+│   ├── ContactPage.jsx
 │   ├── HomePage.jsx
-│   └── SearchPage.jsx      # Sports-aware: shows scores for sports queries
-└── utils/
-    ├── recommend.js        # TF-IDF + NLP personalisation engine
-    └── time.js
+│   ├── PrivacyPolicyPage.jsx
+│   ├── SearchPage.jsx
+│   └── TermsPage.jsx
+├── utils/
+│   ├── recommend.js        # TF-IDF + NLP personalisation engine
+│   └── time.js
+├── config.js               # Site identity, API config, nav sections
+└── index.css               # Design tokens + full stylesheet
+worker/
+└── src/index.js            # Cloudflare Worker CORS proxy
 ```
 
 ---
 
-## Enabling Google AdSense
+## Google AdSense
 
-The AdSense publisher ID (`ca-pub-4943024009014829`) is set directly in [`index.html`](index.html) and in `AdUnit.jsx` — no environment variable needed.
+The publisher ID is set in `index.html` and `src/config.js`. To use your own:
 
-1. Replace the `slot` prop values on the `<AdUnit>` components in `HomePage.jsx` and `CategoryPage.jsx` with your real ad unit slot IDs from the AdSense dashboard.
+1. Replace `ADSENSE_PUB_ID` in `src/config.js`
+2. Replace the `<script>` tag in `index.html`
+3. Update the `slot` prop on each `<AdUnit>` in `HomePage.jsx` and `CategoryPage.jsx`
+
+Ads appear only after your site is reviewed and approved by Google AdSense (typically 2–4 weeks).
 
 ---
 
 ## License
 
-MIT — do whatever you like with it.
+MIT — fork freely.

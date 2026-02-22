@@ -65,7 +65,7 @@ export function HomePage({ articles, onOpen }) {
             ];
             localStorage.setItem(SHOWN_KEY, JSON.stringify(merged));
         } catch { /* ignore */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // intentionally run once on mount
 
     const withImg = ranked.filter((a) => a.urlToImage);

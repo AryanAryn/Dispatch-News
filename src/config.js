@@ -1,5 +1,15 @@
 // ─── App-wide configuration constants ────────────────────────────────────────
 
+// ── Site identity — update these when forking ────────────────────────────────
+export const SITE_NAME = 'The Dispatch';
+export const SITE_OWNER = 'Aryan';
+/** GitHub repository URL */
+export const GITHUB_REPO = 'https://github.com/AryanAryn/Dispatch-News';
+/** GitHub profile URL */
+export const GITHUB_PROFILE = 'https://github.com/AryanAryn';
+/** Contact email address */
+export const CONTACT_EMAIL = 'mr.aryan.aoa@gmail.com';
+
 // ── Google AdSense ───────────────────────────────────────────────────────────
 export const ADSENSE_PUB_ID = 'ca-pub-4943024009014829';
 

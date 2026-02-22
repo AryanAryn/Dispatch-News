@@ -16,6 +16,7 @@
     --serif: 'Playfair Display', Georgia, serif;
     --body: 'Merriweather', Georgia, serif;
     --ui: 'Roboto Condensed', Helvetica, sans-serif;
+    --contract: 'IBM Plex Serif', Georgia, 'Times New Roman', serif;
 
     /* ── TYPE SCALE — Minor Third × 1.200 ──────────────────────────
        Each step multiplies by 1.2. Base = 16px (1rem).
@@ -23,17 +24,28 @@
        lg   23  ·  xl  28  ·  2xl 33  ·  3xl  40  ·  4xl 48
        5xl  64  ·  6xl 80  (display / masthead only)
     ─────────────────────────────────────────────────────────────── */
-    --text-xs:   12px;   /* fine print · badges · bylines · nav      */
-    --text-sm:   13px;   /* descriptions · meta · captions           */
-    --text-base: 16px;   /* body copy                                 */
-    --text-md:   19px;   /* card titles · section labels             */
-    --text-lg:   23px;   /* sub-headlines · editorial titles         */
-    --text-xl:   28px;   /* modal titles · display numbers           */
-    --text-2xl:  33px;   /* hero headline floor (clamp min)          */
-    --text-3xl:  40px;   /* feature / auth display                   */
-    --text-4xl:  48px;   /* decorative placeholder glyph             */
-    --text-5xl:  64px;   /* auth logo max                            */
-    --text-6xl:  80px;   /* masthead wordmark max                    */
+    --text-xs: 12px;
+    /* fine print · badges · bylines · nav      */
+    --text-sm: 13px;
+    /* descriptions · meta · captions           */
+    --text-base: 16px;
+    /* body copy                                 */
+    --text-md: 19px;
+    /* card titles · section labels             */
+    --text-lg: 23px;
+    /* sub-headlines · editorial titles         */
+    --text-xl: 28px;
+    /* modal titles · display numbers           */
+    --text-2xl: 33px;
+    /* hero headline floor (clamp min)          */
+    --text-3xl: 40px;
+    /* feature / auth display                   */
+    --text-4xl: 48px;
+    /* decorative placeholder glyph             */
+    --text-5xl: 64px;
+    /* auth logo max                            */
+    --text-6xl: 80px;
+    /* masthead wordmark max                    */
 }
 
 html {
@@ -47,6 +59,37 @@ body {
     font-size: var(--text-base);
     line-height: 1.6;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 100vh;
+}
+
+/* ─── GLOBAL BUTTON BASE ─── */
+button {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    cursor: pointer;
+    font-family: var(--ui);
+    font-weight: 700;
+    letter-spacing: 0;
+    transition: background 0.15s, color 0.15s;
+}
+
+button:hover:not(:disabled) {
+    background: var(--red);
+    color: var(--paper);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 /* ─── MASTHEAD ─── */
@@ -91,7 +134,9 @@ body {
     display: block;
 }
 
-.user-icon-btn:hover {
+.user-icon-btn:hover,
+.user-icon-btn:hover:not(:disabled) {
+    background: none;
     color: var(--ink);
     border-color: var(--ink);
 }
@@ -119,8 +164,7 @@ body {
     font-size: var(--text-xs);
     font-family: var(--ui);
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .logo-block {
@@ -164,6 +208,7 @@ nav button {
 }
 
 nav button:hover {
+    background: none;
     color: var(--ink);
     border-bottom-color: var(--ink);
 }
@@ -280,6 +325,7 @@ nav button.active {
     max-width: 1280px;
     margin: 0 auto;
     padding: 0 24px 48px;
+    flex: 1;
 }
 
 /* ─── SECTION LABELS ─── */
@@ -835,8 +881,7 @@ nav button.active {
     font-family: var(--ui);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: white;
     background: var(--ink);
     padding: 10px 20px;
@@ -855,8 +900,7 @@ nav button.active {
     padding: 60px 24px;
     font-family: var(--ui);
     font-size: var(--text-xs);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: var(--mid);
 }
 
@@ -907,6 +951,27 @@ footer p {
     font-family: var(--ui);
     font-size: var(--text-xs);
     color: var(--mid);
+}
+
+.footer-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    margin-top: 12px;
+}
+
+.footer-nav a {
+    font-family: var(--ui);
+    font-size: var(--text-xs);
+    color: var(--mid);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.footer-nav a:hover {
+    color: var(--ink);
+    text-decoration: underline;
 }
 
 /* ─── RESPONSIVE ─── */
@@ -1056,8 +1121,7 @@ footer p {
     font-family: var(--ui);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
     color: var(--ink);
 }
 
@@ -1099,8 +1163,7 @@ footer p {
     font-family: var(--ui);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
     color: var(--mid);
 }
 
@@ -1267,8 +1330,7 @@ footer p {
     font-family: var(--ui);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     white-space: nowrap;
     transition: background 0.15s;
 }
@@ -1416,17 +1478,16 @@ footer p {
 }
 
 .account-btn-danger {
-    background: none;
-    border: 1px solid var(--red);
-    color: var(--red);
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
     cursor: pointer;
     font-family: var(--ui);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     padding: 10px 18px;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s;
 }
 
 .account-btn-danger:hover {
@@ -1455,19 +1516,183 @@ footer p {
 }
 
 .account-back {
-    background: none;
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
     border: none;
     cursor: pointer;
     font-family: var(--ui);
     font-size: var(--text-xs);
     font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--mid);
-    padding: 0;
-    transition: color 0.15s;
+    letter-spacing: 0;
+    padding: 9px 18px;
+    transition: background 0.15s;
 }
 
 .account-back:hover {
+    background: var(--red);
+}
+
+/* ─── STATIC PAGES (About / Privacy / Terms / Contact) ─── */
+.static-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 52px 0 96px;
+}
+
+.static-page-title {
+    font-family: var(--contract);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    color: var(--ink);
+    text-align: center;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 8px;
+}
+
+.static-page-meta {
+    font-family: var(--ui);
+    font-size: var(--text-xs);
+    color: var(--mid);
+    text-align: center;
+    letter-spacing: 0.04em;
+    margin-bottom: 44px;
+}
+
+.static-section {
+    margin-bottom: 0;
+    padding: 18px 0;
+    border-bottom: 1px solid #e2ddd5;
+}
+
+.static-section:last-of-type {
+    border-bottom: none;
+}
+
+.static-section h2 {
+    font-family: var(--contract);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.static-section p,
+.static-section li {
+    font-family: var(--contract);
+    font-size: var(--text-sm);
+    line-height: 1.65;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.static-section ul {
+    padding-left: 18px;
+    margin-bottom: 6px;
+}
+
+.static-section li {
+    margin-bottom: 3px;
+}
+
+.static-section strong {
+    font-weight: 600;
+}
+
+.static-section a:not(.static-link-btn) {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.static-section a:not(.static-link-btn):hover {
+    color: var(--red);
+}
+
+.static-allcaps {
+    font-family: var(--contract);
+    font-size: var(--text-sm);
+    line-height: 1.65;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.static-section code {
+    font-family: 'Courier New', monospace;
+    font-size: var(--text-xs);
+    background: #f2efe9;
+    padding: 2px 5px;
+    border: 1px solid #ddd8ce;
+}
+
+.static-link-btn {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: var(--ui);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 9px 18px;
+    text-decoration: none;
+    transition: background 0.15s;
+}
+
+.static-link-btn:hover {
+    background: var(--red);
+}
+
+.static-contact-link {
+    font-family: var(--contract);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink) !important;
+    word-break: break-all;
+}
+
+/* Static page minimal header */
+.static-header {
+    border-bottom: 2px solid var(--ink);
+    padding: 14px 0;
+    margin-bottom: 0;
+}
+
+.static-header-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.static-header-brand {
+    font-family: var(--serif);
+    font-size: var(--text-md);
+    font-weight: 900;
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+}
+
+.static-header-brand:hover {
+    color: var(--red);
+}
+
+.static-header-back {
+    font-family: var(--ui);
+    font-size: var(--text-xs);
+    letter-spacing: 0.02em;
+    color: var(--mid);
+    text-decoration: none;
+}
+
+.static-header-back:hover {
     color: var(--ink);
 }

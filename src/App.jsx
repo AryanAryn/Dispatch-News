@@ -6,7 +6,7 @@ import {
 import { PersonalizationProvider, usePersonalization } from './context/PersonalizationContext';
 import { useNews } from './hooks/useNews';
 import { hasApiKey, clearStoredKey } from './api/newsApi';
-import { NAV_SECTIONS } from './config.js';
+import { NAV_SECTIONS, SITE_NAME } from './config.js';
 import { Masthead } from './components/Masthead';
 import { Ticker } from './components/Ticker';
 import { ArticleModal } from './components/ArticleModal';
@@ -15,6 +15,10 @@ import { CategoryPage } from './pages/CategoryPage';
 import { SearchPage } from './pages/SearchPage';
 import { AuthPage } from './pages/AuthPage';
 import { AccountPage } from './pages/AccountPage';
+import { AboutPage } from './pages/AboutPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { TermsPage } from './pages/TermsPage';
+import { ContactPage } from './pages/ContactPage';
 
 // ─── Auth guard ───────────────────────────────────────────────────────────────
 function RequireAuth({ children }) {
@@ -82,11 +86,14 @@ function AppInner({ onClearKey }) {
             <div className="content-wrapper">{renderPage()}</div>
 
             <footer>
-                <div className="f-logo">The Dispatch</div>
-                <p>
-                    Powered by NewsAPI · All articles © their respective publishers ·
-                    Personalised based on your reading history
-                </p>
+                <div className="f-logo">{SITE_NAME}</div>
+                <p>Powered by NewsAPI · All articles © their respective publishers</p>
+                <nav className="footer-nav">
+                    <a href="#/about">About</a>
+                    <a href="#/contact">Contact</a>
+                    <a href="#/privacy">Privacy policy</a>
+                    <a href="#/terms">Terms of service</a>
+                </nav>
             </footer>
 
             <ArticleModal article={openArticle} onClose={handleClose} />
@@ -126,6 +133,10 @@ export default function App() {
                             : <AuthPage onSave={() => setAuthed(true)} />
                     }
                 />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/contact" element={<ContactPage />} />
                 <Route
                     path="/*"
                     element={
