@@ -8,6 +8,11 @@ compatibility_date = "2024-09-23"
 [vars]
 ALLOWED_ORIGIN = "https://news.aryanaryn.me"
 
+# ── Cloudflare AI binding ─────────────────────────────────────────────────────
+# Powers the semantic embedding endpoint at POST /embed
+[ai]
+binding = "AI"
+
 # ── Deployment environments (optional) ───────────────────────────────────────
 # Uncomment to add a staging environment:
 #

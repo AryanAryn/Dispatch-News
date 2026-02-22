@@ -23,6 +23,9 @@ export const HISTORY_LS_KEY = 'dispatch_history';
 /** localStorage key where suppressed recommendation terms are stored */
 export const SUPPRESSED_LS_KEY = 'dispatch_suppressed';
 
+/** localStorage key where article embedding vectors are cached */
+export const EMBED_VEC_LS_KEY = 'dispatch_embed_vec';
+
 /**
  * NewsAPI base URL.
  * Dev:  Vite's dev-server proxy forwards /newsapi → newsapi.org (no CORS).

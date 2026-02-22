@@ -35,6 +35,43 @@ export default {
             });
         }
 
+        // ── Semantic embedding endpoint ───────────────────────────────────────
+        // POST /embed  { texts: string[] }  →  { vectors: number[][] }
+        // Uses CF Workers AI bge-small-en-v1.5 (384-dim, free tier)
+        if (url.pathname === '/embed' && request.method === 'POST') {
+            if (!env.AI) {
+                return new Response(JSON.stringify({ error: 'AI binding not configured' }), {
+                    status: 503,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+                });
+            }
+            let body;
+            try { body = await request.json(); }
+            catch {
+                return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+                    status: 400,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+                });
+            }
+            const texts = (body.texts ?? []).slice(0, 25); // max 25 per call
+            if (!texts.length) {
+                return new Response(JSON.stringify({ vectors: [] }), {
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+                });
+            }
+            try {
+                const result = await env.AI.run('@cf/baai/bge-small-en-v1.5', { text: texts });
+                return new Response(JSON.stringify({ vectors: result.data }), {
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+                });
+            } catch (err) {
+                return new Response(JSON.stringify({ error: 'AI inference failed', detail: String(err) }), {
+                    status: 502,
+                    headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+                });
+            }
+        }
+
         // Only proxy /v2/* — reject everything else
         if (!url.pathname.startsWith('/v2/')) {
             return new Response(JSON.stringify({ error: 'Not found' }), {
@@ -99,7 +136,7 @@ export default {
 function corsHeaders(env) {
     return {
         'Access-Control-Allow-Origin':  env.ALLOWED_ORIGIN ?? '*',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, X-Api-Key',
         'Access-Control-Max-Age':       '86400',
     };

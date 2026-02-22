@@ -16,14 +16,18 @@
 ## Features
 
 - **NYT-style layout** — hero grid, three-column band, main + sidebar, editorial strip, and full feed grid
-- **Personalised feed** — TF-IDF + NLP recommendation engine with exponential recency decay; adapts as you read and surfaces fresh articles on every visit
+- **Personalised feed** — two-tier recommendation engine: fast TF-IDF + NLP ranking on first load, then silently upgraded to semantic cosine similarity via Cloudflare Workers AI embeddings (`bge-small-en-v1.5`); blended 70% semantic / 30% TF-IDF with exponential recency decay and source-diversity penalty
+- **Interest management** — view your top interest tags on the home sidebar; remove individual topics or reset everything from the Account page
 - **Sports scores** — live results and upcoming fixtures via TheSportsDB, shown as a horizontally-scrollable scores band
 - **Sports-aware search** — detects sports queries and surfaces match scores alongside articles
 - **Breaking-news ticker** — animated headline strip on the home page
-- **Article modal** — in-app preview with HTML stripping; opens the full story at its original publication
+- **Article modal** — in-app preview with HTML stripping; opens the full story at its original publication; full keyboard support and focus trap
 - **Click history** — stored in `localStorage`; powers the interest profile and "Recently read" sidebar
+- **Per-page titles** — `document.title` updates dynamically on every route change
 - **Type system** — Minor Third (×1.200) scale with 11 CSS tokens (`--text-xs` to `--text-6xl`)
 - **Responsive** — mobile-first with a hamburger nav
+- **SEO-ready** — meta description, Open Graph, Twitter Card, canonical URL, `robots.txt`, `sitemap.xml`, semantic HTML landmarks (`<main>`, `<article>`, `<nav aria-label>`)
+- **Accessible** — `role="dialog"` + focus trap on modal, `aria-current="page"` on active nav, keyboard-navigable article cards, global `:focus-visible` ring
 - **Google AdSense ready** — `<AdUnit>` component pre-wired; add your publisher ID and slots
 - **Footer pages** — About, Privacy Policy, Terms of Service, and Contact pages included
 - **CI/CD** — GitHub Actions builds and deploys to GitHub Pages on every push to `main`
@@ -39,6 +43,7 @@
 | Styling | Plain CSS with design tokens |
 | Fonts | Playfair Display · Merriweather · Roboto Condensed · IBM Plex Serif |
 | NLP | [compromise](https://github.com/spencermountain/compromise) v14 |
+| Embeddings | Cloudflare Workers AI · `@cf/baai/bge-small-en-v1.5` (384-dim, free tier) |
 | News data | [NewsAPI](https://newsapi.org) |
 | Sports data | [TheSportsDB](https://www.thesportsdb.com) v1 |
 | Ads | Google AdSense |
@@ -120,9 +125,27 @@ A ready-made workflow lives at `.github/workflows/deploy.yml`.
 
 ---
 
-## Cloudflare Worker (CORS Proxy)
+## Recommendation Engine
 
-NewsAPI blocks direct browser requests from non-`localhost` origins on the free plan. The worker in `worker/` is a transparent CORS proxy — the user's key is forwarded as the `X-Api-Key` header; no key is stored server-side.
+Feed ranking runs in two transparent phases so the page is never blocked:
+
+| Phase | When | Method |
+|---|---|---|
+| **1 — TF-IDF** | Immediate (synchronous) | Named-entity extraction via `compromise`; term frequency weighted by recency decay; 22% source-diversity penalty |
+| **2 — Semantic** | ~1 s after articles load | Vectors fetched from `POST /embed` (CF Workers AI); user profile built by averaging the last 30 read articles; blended 70% cosine similarity + 30% TF-IDF |
+
+Articles that haven't been vectorised yet are ranked at a 30% TF-IDF discount so they're still surfaced rather than buried.
+
+Vectors are cached in `localStorage` under `dispatch_embed_vec` (capped at 300 entries ≈ 450 KB). No article text leaves the browser except to your own Cloudflare Worker.
+
+---
+
+## Cloudflare Worker (CORS Proxy + AI Embeddings)
+
+The worker in `worker/` does two things:
+
+1. **CORS proxy** — forwards NewsAPI requests so the browser isn't blocked by CORS on the free plan. The user's key travels as `X-Api-Key`; nothing is stored server-side.
+2. **Embeddings endpoint** — `POST /embed` accepts up to 25 article texts and returns 384-dimensional vectors from `@cf/baai/bge-small-en-v1.5` via the [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) binding. Used to power semantic feed ranking. Free tier covers ~10,000 requests/day.
 
 ```bash
 npm install -g wrangler
@@ -131,6 +154,8 @@ cd worker && npm install && npm run deploy
 ```
 
 Copy the printed worker URL into `.env` (`VITE_PROXY_URL=...`) and the GitHub repo variable of the same name.
+
+> **CF AI binding** is declared in `worker/wrangler.toml` under `[ai]` and requires no extra secrets or paid plan.
 
 > **CI/CD**: pushing any file under `worker/` triggers `.github/workflows/deploy-worker.yml`. Requires a `CF_API_TOKEN` secret with *Workers Scripts: Edit* permission.
 
@@ -141,7 +166,7 @@ Copy the printed worker URL into `.env` (`VITE_PROXY_URL=...`) and the GitHub re
 ```
 src/
 ├── api/
-│   ├── newsApi.js          # NewsAPI wrapper with 5-min cache
+│   ├── newsApi.js          # NewsAPI wrapper · 5-min cache · fetchEmbeddings()
 │   └── sportsApi.js        # TheSportsDB wrapper
 ├── components/
 │   ├── cards/              # HeroMain · HeroSecondary · ColCard · ListCard · FeedCard · EditorialCard
@@ -152,7 +177,7 @@ src/
 │   ├── SectionHead.jsx
 │   └── Ticker.jsx
 ├── context/
-│   └── PersonalizationContext.jsx
+│   └── PersonalizationContext.jsx  # history · interest suppression · full reset
 ├── hooks/
 │   ├── useNews.js
 │   └── useSports.js
@@ -167,12 +192,16 @@ src/
 │   ├── SearchPage.jsx
 │   └── TermsPage.jsx
 ├── utils/
-│   ├── recommend.js        # TF-IDF + NLP personalisation engine
+│   ├── recommend.js        # TF-IDF + NLP · cosine similarity · semantic blended ranking
 │   └── time.js
-├── config.js               # Site identity, API config, nav sections
+├── config.js               # Site identity, API config, nav sections, localStorage keys
 └── index.css               # Design tokens + full stylesheet
+public/
+├── robots.txt              # Allows all crawlers; points to sitemap
+└── sitemap.xml             # Canonical root URL declaration
 worker/
-└── src/index.js            # Cloudflare Worker CORS proxy
+├── wrangler.toml           # [ai] binding for Workers AI
+└── src/index.js            # CORS proxy (/v2/*) + embedding endpoint (POST /embed)
 ```
 
 ---

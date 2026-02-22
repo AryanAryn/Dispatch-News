@@ -1,7 +1,8 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePersonalization } from '../context/PersonalizationContext';
-import { rankArticles, topInterests } from '../utils/recommend';
+import { rankArticlesSemantic } from '../utils/recommend';
+import { fetchEmbeddings } from '../api/newsApi';
 import { useSports } from '../hooks/useSports';
 import { SectionHead } from '../components/SectionHead';
 import { ScoresBand } from '../components/sports/ScoresBand';
@@ -33,6 +34,18 @@ export function HomePage({ articles, onOpen }) {
     // Sports scores ≤1 day old for the home page sidebar band
     const { recent: sportsEvents } = useSports({ maxAgeDays: 1 });
 
+    // ── Semantic vector cache (populated in background after articles load) ───────
+    const [vectorCache, setVectorCache] = useState({});
+
+    useEffect(() => {
+        if (!articles.length || !isPersonalized) return;
+        let cancelled = false;
+        fetchEmbeddings(articles)
+            .then(cache => { if (!cancelled) setVectorCache(cache); })
+            .catch(() => { /* degrade silently to TF-IDF */ });
+        return () => { cancelled = true; };
+    }, [articles, isPersonalized]);
+
     // Read which article URLs were already featured on a previous visit (stable, read once)
     const [shownSet] = useState(() => {
         try {
@@ -44,14 +57,14 @@ export function HomePage({ articles, onOpen }) {
 
     const ranked = useMemo(() => {
         if (!isPersonalized) return articles;
-        const top = rankArticles(articles, history, suppressedTerms);
+        const top = rankArticlesSemantic(articles, history, vectorCache, suppressedTerms);
         // Demote articles already shown in a recent visit so fresh ones surface
         const fresh = top.filter(a => !shownSet.has(a.url));
         const stale = top.filter(a => shownSet.has(a.url));
         const merged = [...fresh, ...stale];
         // Keep top-ranked locked for hero slots, shuffle the long tail for variety
         return [...merged.slice(0, 16), ...shuffle(merged.slice(16))];
-    }, [articles, history, suppressedTerms, isPersonalized, shownSet]);
+    }, [articles, history, vectorCache, suppressedTerms, isPersonalized, shownSet]);
 
     // After rendering, persist the currently featured URLs so next visit shows new ones
     useEffect(() => {
